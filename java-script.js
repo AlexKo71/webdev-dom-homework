@@ -56,8 +56,7 @@ for (const listCommentsElement of listCommentsElements) {
 function renderComments() {
   const commentHtml = comments
     .map((comments, index) => {
-    //   let classInputLikes = "";
-      return `<li data-comment-number="${index}" class="comment"><div class="comment-header"><div>${
+          return `<li data-comment-number="${index}" class="comment"><div class="comment-header"><div>${
         comments.name
       }</div><div>${
         comments.time
