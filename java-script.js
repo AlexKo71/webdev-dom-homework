@@ -20,35 +20,82 @@ function timeNow() {
 
 // массив данных
 
-const comments = [
-  {
-    name: "Глеб Фокин",
-    textMessage: "Это будет первый комментарий на этой странице",
-    time: "12.02.22 12:18",
-    inputLikes: 3,
-    isLike: false,
-  },
-  {
-    name: "Варвара Н.",
-    textMessage: "Мне нравится как оформлена эта страница! ❤",
-    time: "13.02.22 19:22",
-    inputLikes: 75,
-    isLike: false,
-  },
-];
+let comments = [];
+
+// const comments = [
+//   {
+//     name: "Глеб Фокин",
+//     textMessage: "Это будет первый комментарий на этой странице",
+//     time: "12.02.22 12:18",
+//     inputLikes: 3,
+//     isLike: false,
+//   },
+//   {
+//     name: "Варвара Н.",
+//     textMessage: "Мне нравится как оформлена эта страница! ❤",
+//     time: "13.02.22 19:22",
+//     inputLikes: 75,
+//     isLike: false,
+//   },
+// ];
+
+// запрос в API (метод GET)
+
+function getComments() {
+  fetch(
+    "https://wedev-api.sky.pro/api/v1/alex-ko/comments",
+    { method: "GET" }
+  ).then((response) => {
+    const jsonPromise = response.json();
+    jsonPromise.then((responseData) => {
+      // Преобразовываем данные из формата api в формат приложения:
+      const applicationData = responseData.comments.map((comment) => {
+        return {
+          name: comment.author.name,
+          textMessage: comment.text,
+          time: timeNow(new Date(comment.date)),
+          inputLikes: comment.likes,
+          isLike: comment.isLiked,
+        };
+      });
+      comments = applicationData;
+        renderComments();
+    });
+  });
+}
+
+getComments();
+
+// добавлении комментария (метод POST)
+
+function postComments () {
+fetch("https://wedev-api.sky.pro/api/v1/alex-ko/comments",
+{ method: "POST",
+body: JSON.stringify({
+  text: inputComment.value,
+  name: inputName.value,
+}) ,
+ }).then((response) =>{
+response.json().then((responseData) => {
+  comments = responseData.comments;
+        getComments();
+})
+})
+}
+
+
 
 // ответ на комментарий
 
 const inputReviewListener = () => {
-    const listCommentsElements = document.querySelectorAll(".comment");
-for (const listCommentsElement of listCommentsElements) {
+  const listCommentsElements = document.querySelectorAll(".comment");
+  for (const listCommentsElement of listCommentsElements) {
     const commentNumber = listCommentsElement.dataset.commentNumber;
-    listCommentsElement.addEventListener('click', () => {
-        inputComment.value = `\> ${comments[commentNumber].textMessage} \n\n ${comments[commentNumber].name}, `;
-        renderComments(); 
-    })
-}
-
+    listCommentsElement.addEventListener("click", () => {
+      inputComment.value = `\> ${comments[commentNumber].textMessage} \n\n ${comments[commentNumber].name}, `;
+      renderComments();
+    });
+  }
 };
 
 // обновление списка - рендеринг
@@ -56,7 +103,7 @@ for (const listCommentsElement of listCommentsElements) {
 function renderComments() {
   const commentHtml = comments
     .map((comments, index) => {
-          return `<li data-comment-number="${index}" class="comment"><div class="comment-header"><div>${
+      return `<li data-comment-number="${index}" class="comment"><div class="comment-header"><div>${
         comments.name
       }</div><div>${
         comments.time
@@ -88,24 +135,25 @@ buttonToWrite.addEventListener("click", () => {
     inputName.classList.add("error");
     return;
   } else {
-    comments.push({
-      name: inputName.value
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&prime;"),
-      textMessage: inputComment.value
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&prime;"),
-      time: timeNow(),
-      inputLikes: 0,
-      isLike: false,
-    });
-    renderComments();
+    // comments.push({
+    //   name: inputName.value
+    //     .replaceAll("&", "&amp;")
+    //     .replaceAll("<", "&lt;")
+    //     .replaceAll(">", "&gt;")
+    //     .replaceAll('"', "&quot;")
+    //     .replaceAll("'", "&prime;"),
+    //   textMessage: inputComment.value
+    //     .replaceAll("&", "&amp;")
+    //     .replaceAll("<", "&lt;")
+    //     .replaceAll(">", "&gt;")
+    //     .replaceAll('"', "&quot;")
+    //     .replaceAll("'", "&prime;"),
+    //   time: timeNow(),
+    //   inputLikes: 0,
+    //   isLike: false,
+    // });
+    // renderComments();
+    postComments();
   }
   inputName.value = "";
   inputComment.value = "";
@@ -119,7 +167,7 @@ function inputLikesListeners() {
   const likeButtonsElements = document.querySelectorAll(".like-button");
   for (const likeButtonsElement of likeButtonsElements) {
     likeButtonsElement.addEventListener("click", (event) => {
-        event.stopPropagation();
+      event.stopPropagation();
       const index = likeButtonsElement.dataset.index;
       if (likeButtonsElement.dataset.like === "false") {
         comments[index].inputLikes += 1;
@@ -133,4 +181,4 @@ function inputLikesListeners() {
   }
 }
 
-console.log(comments);
+// console.log(comments);
